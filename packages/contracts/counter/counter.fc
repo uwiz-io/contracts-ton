@@ -22,6 +22,11 @@
     ~strdump("increment received"); 
     save_data(counter + 1);                 ;; call our write utility function to persist values to storage
   }
+
+  if (op == 2) {
+    ~strdump("decrement received"); 
+    save_data(counter - 1);
+  }
 }
 
 int counter() method_id {        ;; getter declaration - returns int as result
