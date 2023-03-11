@@ -5,15 +5,15 @@ import { TonClient, Cell, WalletContractV4 } from "ton";
 import Counter from "./counter"; // interface class
 require('dotenv').config();
 
-const CHAIN_NETWORK = process.env.CHAIN_NETWORK
+const CHAIN = "testnet"
 
 async function deploy() {
   // initialize ton rpc client on testnet
-  const endpoint = await getHttpEndpoint({ network: "testnet" });
+  const endpoint = await getHttpEndpoint({ network: CHAIN });
   const client = new TonClient({ endpoint });
 
   // prepare Counter's initial code and data cells for deployment
-  const counterCode = Cell.fromBoc(fs.readFileSync("jetton-minter.cell"))[0]; // compilation output from step 6
+  const counterCode = Cell.fromBoc(fs.readFileSync("../contracts/counter/counter.cell"))[0]; // compilation output from step 6
   const initialCounterValue = Date.now(); // to avoid collisions use current number of milliseconds since epoch as initial value
   const counter = Counter.createForDeploy(counterCode, initialCounterValue);
 
