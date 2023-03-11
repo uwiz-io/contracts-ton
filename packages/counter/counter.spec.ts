@@ -56,4 +56,9 @@ describe("Counter tests", () => {
     await counterContract.sendIncrement(wallet1.getSender());
   })
 
+  it("should decrement the counter value", async () =>  {
+    console.log("sending decrement message");
+    await counterContract.sendDecrement(wallet1.getSender());
+  })
+
 });
