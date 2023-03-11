@@ -43,6 +43,24 @@ describe("Counter tests", () => {
     expect(counterValue).toEqual(18n);
   })
 
+  it("should decrement the counter value", async () =>  {
+    await counterContract.sendDecrement(wallet1.getSender());
+    const counterValue = await counterContract.getCounter();
+    expect(counterValue).toEqual(16n);
+  })
+
+  it("should add 12 to the counter value", async () =>  {
+    await counterContract.sendAddNumber(wallet1.getSender(), 12);
+    const counterValue = await counterContract.getCounter();
+    expect(counterValue).toEqual(29n);
+  })
+
+  it("should take 12 to the counter value", async () =>  {
+    await counterContract.sendAddNumber(wallet1.getSender(), -12);
+    const counterValue = await counterContract.getCounter();
+    expect(counterValue).toEqual(5n);
+  })
+
   it("should send ton coin to the contract", async () => {
     console.log("sending 7.123 TON");
     await wallet1.send({
@@ -50,15 +68,5 @@ describe("Counter tests", () => {
       value: toNano("7.123")
     });
   });
-
-  it("should increment the counter value", async () =>  {
-    console.log("sending increment message");
-    await counterContract.sendIncrement(wallet1.getSender());
-  })
-
-  it("should decrement the counter value", async () =>  {
-    console.log("sending decrement message");
-    await counterContract.sendDecrement(wallet1.getSender());
-  })
 
 });

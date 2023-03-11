@@ -29,6 +29,7 @@ export default class Counter implements Contract {
     const messageBody = beginCell()
       .storeUint(1, 32) // op (op #1 = increment)
       .storeUint(0, 64) // query id
+      .storeInt(1, 32)
       .endCell();
     await provider.internal(via, {
       value: "0.002", // send 0.002 TON for gas
@@ -40,6 +41,19 @@ export default class Counter implements Contract {
     const messageBody = beginCell()
       .storeUint(2, 32) // op (op #2 = decrement)
       .storeUint(0, 64) // query id
+      .storeInt(-1, 32)
+      .endCell();
+    await provider.internal(via, {
+      value: "0.002", // send 0.002 TON for gas
+      body: messageBody
+    });
+  }
+
+  async sendAddNumber(provider: ContractProvider, via: Sender, num: number) {
+    const messageBody = beginCell()
+      .storeUint(3, 32) // op (op #3 = addNumber)
+      .storeUint(0, 64) // query id
+      .storeInt(num, 32) // number to be added to counter
       .endCell();
     await provider.internal(via, {
       value: "0.002", // send 0.002 TON for gas

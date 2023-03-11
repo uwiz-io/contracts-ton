@@ -12,20 +12,27 @@
 }
 
 () recv_internal(int msg_value, cell in_msg, slice in_msg_body) impure {  ;; well known function signature
-  ~dump(msg_value);
+  ;; ~dump(msg_value);
   if (in_msg_body.slice_empty?()) {         ;; check if incoming message is empty (with no body)
     return ();                              ;; return successfully and accept an empty message
   }
   int op = in_msg_body~load_uint(32);       ;; parse the operation type encoded in the beginning of msg body
+  _ = in_msg_body~load_uint(64);            ;; discard query id
+  int change = in_msg_body~load_int(32);
   var (counter) = load_data();              ;; call our read utility function to load values from storage
   if (op == 1) {                            ;; handle op #1 = increment
-    ~strdump("increment received"); 
+    ;; ~strdump("increment received"); 
     save_data(counter + 1);                 ;; call our write utility function to persist values to storage
   }
 
   if (op == 2) {
-    ~strdump("decrement received"); 
+    ;; ~strdump("decrement received"); 
     save_data(counter - 1);
+  }
+
+  if (op == 3) {
+    ;; ~strdump("add number received"); 
+    save_data(counter + change);
   }
 }
 
