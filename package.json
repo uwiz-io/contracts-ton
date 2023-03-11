@@ -5,6 +5,7 @@
     "@ton-community/sandbox": "^0.5.1",
     "@ton-community/test-utils": "^0.0.2",
     "@types/jest": "^29.4.0",
+    "bn.js": "^5.2.1",
     "dotenv": "^16.0.3",
     "jest": "^29.5.0",
     "ton-core": "^0.48.0",
