@@ -1,5 +1,4 @@
-import { JettonMaster } from "ton";
-import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell } from "ton-core";
+import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell, Builder } from "ton-core";
 import { OPS } from "./ops"
 
 
@@ -10,6 +9,7 @@ export default class JettonWallet implements Contract {
       .storeCoins(initialJettonCount) // initial jetton count
       .storeAddress(ownerAddress)
       .storeAddress(jettonMasterAddress)
+      .storeRef(code) // should store ref to jetton master IRL
       .endCell();
     const workchain = 0; // deploy to workchain 0
     const address = contractAddress(workchain, { code, data });
