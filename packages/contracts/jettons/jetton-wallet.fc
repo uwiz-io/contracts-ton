@@ -238,6 +238,7 @@ const gas_consumption = 10000000; ;; 0.01 TON
   }
 
   if (op == op::burn()) { ;; burn
+    ~strdump("burn received"); 
     burn_tokens(in_msg_body, sender_address, msg_value, fwd_fee);
     return ();
   }
