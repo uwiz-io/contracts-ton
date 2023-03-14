@@ -30,14 +30,9 @@ export default class OpinionVerifier implements Contract {
     };
   }
 
-  async getBalance(provider: ContractProvider) {
-    const { stack } = await provider.get("balance", []);
-    return stack.readBigNumber();
-  }
-
-  async sendIncrement(provider: ContractProvider, via: Sender, string: string) {
+  async sendPredictionString(provider: ContractProvider, via: Sender, string: string) {
     const messageBody = beginCell()
-      .storeUint(OPS.receive_opinion_string, 32) // op
+      .storeUint(OPS.receive_prediction_string, 32) // op
       .storeUint(0, 64) // query id
       .storeStringTail(string)
       .endCell();

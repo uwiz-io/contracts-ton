@@ -8,31 +8,38 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
   return (ds~load_uint(256), ds~load_msg_addr());              ;; read a 256 bit unsigned int from the slice and return it
 }
 
-() save_data(int hash, slice owner) impure inline {     ;; write function declaration - takes an int as arg
+() save_data(int hash, slice owner_address) impure inline {     ;; write function declaration - takes an int as arg
   set_data(begin_cell()                    ;; store the storage cell and create it with a builder 
-    .store_uint(hash, 256)                 ;; write a 256 bit unsigned int to the builder
-    .store_slice(owner)                    ;; write the owner address
+    .store_uint(hash, 256)                 ;; write a 256 bit unsigned int (sha265) to the builder
+    .store_slice(owner_address)            ;; write the owner address
     .end_cell());                          ;; convert the builder to a cell
 }
 
-() recv_internal(int msg_value, cell in_msg, slice in_msg_body) impure {  ;; well known function signature
+() recv_internal(int msg_value, cell in_msg_full, slice in_msg_body) impure {  ;; well known function signature
   ;; ~dump(msg_value);
   ;; ~strdump(in_msg_body);
   if (in_msg_body.slice_empty?()) {         ;; check if incoming message is empty (with no body)
     return ();                              ;; return successfully and accept an empty message
   }
+
+  slice cs = in_msg_full.begin_parse();
+  int flags = cs~load_uint(4);
+  slice sender_address = cs~load_msg_addr();
+  var (old_hash, owner_address) = load_data();      ;; call our read utility function to load values from storage
+  
+  throw_unless(401, equal_slice_bits(sender_address, owner_address));  ;; only accept operation from owner
+
   int op = in_msg_body~load_uint(32);       ;; parse the operation type encoded in the beginning of msg body
   _ = in_msg_body~load_uint(64);            ;; discard query id
-  slice opinion_string = in_msg_body;
-  var (old_hash, owner) = load_data();      ;; call our read utility function to load values from storage
+  slice prediction_string = in_msg_body;
 
-  if (op == op::receive_opinion_string()) { ;; handle op "receive_opinion_string"c
-    ;; ~strdump(opinion_string);
-    int opinion_hash = string_hash(opinion_string);
-    ;; ~dump(opinion_hash);
-    int hash_xor = opinion_hash ^ old_hash;
+  if (op == op::receive_prediction_string()) { ;; handle op "receive_prediction_string"c
+    ;; ~strdump(prediction_string);
+    int prediction_hash = string_hash(prediction_string);
+    ;; ~dump(prediction_hash);
+    int hash_xor = prediction_hash ^ old_hash;
     ;; ~dump(hash_xor);
-    save_data(hash_xor, owner);             ;; call our write utility function to persist values to storage
+    save_data(hash_xor, owner_address);             ;; call our write utility function to persist values to storage
   }
 
   if (op == op::pay_balance_back()) {       ;; handle op "pay_balance_back"c
@@ -45,7 +52,7 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
     slice message_body = "Fund back from counter";
     cell msg = begin_cell()
       .store_uint(0x18, 6)
-      .store_slice(owner)
+      .store_slice(owner_address)
       .store_coins(my_balance)
       .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
       .store_slice(message_body)
@@ -54,11 +61,6 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
   }
 }
 
-(int, slice) get_info() method_id {         ;; getter declaration - returns (int hash, slice owner) as result
+(int, slice) get_info() method_id {         ;; getter declaration - returns (int hash, slice owner_address) as result
   return load_data();                       ;; call our read utility function to load value
 }
-
-;; (int) balance() method_id {                 ;; getter declaration - returns nanoTon int as result
-;;   [int my_balance, _] = get_balance();
-;;   return my_balance;                        ;; call our read utility function to load value
-;; }
