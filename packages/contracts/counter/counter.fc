@@ -18,7 +18,6 @@
   }
   int op = in_msg_body~load_uint(32);       ;; parse the operation type encoded in the beginning of msg body
   _ = in_msg_body~load_uint(64);            ;; discard query id
-  int change = in_msg_body~load_int(32);
   var (counter) = load_data();              ;; call our read utility function to load values from storage
   if (op == 1) {                            ;; handle op #1 = increment
     ;; ~strdump("increment received"); 
@@ -32,11 +31,39 @@
 
   if (op == 3) {
     ;; ~strdump("add number received"); 
+    int change = in_msg_body~load_int(32);
     save_data(counter + change);
   }
+
+  if (op == 4) {
+    var cs = in_msg.begin_parse();
+    int flags = cs~load_uint(4);  ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool
+    ~strdump("return ton balance of smart contract to owner"); 
+    [int my_balance, _] = get_balance();
+    ~dump(my_balance);
+    my_balance -= 20600000;
+    ~dump(my_balance);
+    ;; throw_unless(80, my_balance - msg_value >= 10000000); ;; insufficent founds
+    slice s_addr = cs~load_msg_addr();
+    slice message_body = "Fund back from counter";
+    cell msg = begin_cell()
+      .store_uint(0x18, 6)
+      .store_slice(s_addr)
+      .store_coins(my_balance)
+      .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+      .store_slice(message_body)
+    .end_cell();
+    send_raw_message(msg, 2);
+  }
+  
 }
 
 int counter() method_id {        ;; getter declaration - returns int as result
   var (counter) = load_data();   ;; call our read utility function to load value
   return counter;
+}
+
+int balance() method_id {        ;; getter declaration - returns int as result
+  [int my_balance, _] = get_balance();   ;; call our read utility function to load value
+  return my_balance;
 }

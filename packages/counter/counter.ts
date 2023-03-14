@@ -25,6 +25,11 @@ export default class Counter implements Contract {
     return stack.readBigNumber();
   }
 
+  async getBalance(provider: ContractProvider) {
+    const { stack } = await provider.get("balance", []);
+    return stack.readBigNumber();
+  }
+
   async sendIncrement(provider: ContractProvider, via: Sender) {
     const messageBody = beginCell()
       .storeUint(1, 32) // op (op #1 = increment)
@@ -57,6 +62,17 @@ export default class Counter implements Contract {
       .endCell();
     await provider.internal(via, {
       value: "0.002", // send 0.002 TON for gas
+      body: messageBody
+    });
+  }
+
+  async sendRefund(provider: ContractProvider, via: Sender) {
+    const messageBody = beginCell()
+      .storeUint(4, 32) // op (op #4 = refund)
+      .storeUint(0, 64) // query id
+      .endCell();
+    await provider.internal(via, {
+      value: "0.2", // send 0.002 TON for gas
       body: messageBody
     });
   }

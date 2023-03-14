@@ -69,4 +69,28 @@ describe("Counter tests", () => {
     });
   });
 
+  it("should send ton coin to the contract", async () => {
+    console.log("sending 7.123 TON");
+    await wallet1.send({
+      to: counterContract.address,
+      value: toNano("7.123")
+    });
+    const value = await counterContract.getBalance();
+    // some nanotons for gas
+    expect(Number(value)).toBeGreaterThan(7000000000);
+  });
+
+
+  it("should send ton coin to the contract", async () => {
+    console.log("sending 7.123 TON");
+    await wallet1.send({
+      to: counterContract.address,
+      value: toNano("7.123")
+    });
+
+    await counterContract.sendRefund(wallet1.getSender());
+    
+    const value = await counterContract.getBalance();
+    expect(Number(value)).toBeCloseTo(17594000)
+  });
 });
