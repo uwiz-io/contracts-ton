@@ -3,7 +3,7 @@
 
 int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
 
-(int, slice) load_data() inline {                 ;; read function declaration - returns int as result
+(int, slice) load_data() inline {          ;; read function declaration - returns int as result
   var ds = get_data().begin_parse();       ;; load the storage cell and start parsing as a slice
   return (ds~load_uint(256), ds~load_msg_addr());              ;; read a 256 bit unsigned int from the slice and return it
 }
@@ -16,8 +16,8 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
 }
 
 () recv_internal(int msg_value, cell in_msg, slice in_msg_body) impure {  ;; well known function signature
-  ~dump(msg_value);
-  ~strdump(in_msg_body);
+  ;; ~dump(msg_value);
+  ;; ~strdump(in_msg_body);
   if (in_msg_body.slice_empty?()) {         ;; check if incoming message is empty (with no body)
     return ();                              ;; return successfully and accept an empty message
   }
@@ -27,20 +27,20 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
   var (old_hash, owner) = load_data();      ;; call our read utility function to load values from storage
 
   if (op == op::receive_opinion_string()) { ;; handle op "receive_opinion_string"c
-    ~strdump(opinion_string);
+    ;; ~strdump(opinion_string);
     int opinion_hash = string_hash(opinion_string);
-    ~dump(opinion_hash);
+    ;; ~dump(opinion_hash);
     int hash_xor = opinion_hash ^ old_hash;
-    ~dump(hash_xor);
+    ;; ~dump(hash_xor);
     save_data(hash_xor, owner);             ;; call our write utility function to persist values to storage
   }
 
   if (op == op::pay_balance_back()) {       ;; handle op "pay_balance_back"c
-    ~strdump("return ton balance of smart contract to owner"); 
+    ;; ~strdump("return ton balance of smart contract to owner"); 
     [int my_balance, _] = get_balance();
-    ~dump(my_balance);
+    ;; ~dump(my_balance);
     my_balance -= min_tons_for_storage();
-    ~dump(my_balance);
+    ;; ~dump(my_balance);
     throw_unless(80, my_balance >= 0);      ;; insufficent founds
     slice message_body = "Fund back from counter";
     cell msg = begin_cell()
@@ -54,6 +54,11 @@ int min_tons_for_storage() asm "50000000 PUSHINT"; ;; 0.05 TON
   }
 }
 
-(int, slice) get_info() method_id {         ;; getter declaration - returns int, slice as result
+(int, slice) get_info() method_id {         ;; getter declaration - returns (int hash, slice owner) as result
   return load_data();                       ;; call our read utility function to load value
 }
+
+;; (int) balance() method_id {                 ;; getter declaration - returns nanoTon int as result
+;;   [int my_balance, _] = get_balance();
+;;   return my_balance;                        ;; call our read utility function to load value
+;; }

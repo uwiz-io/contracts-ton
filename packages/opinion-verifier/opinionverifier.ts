@@ -30,6 +30,11 @@ export default class OpinionVerifier implements Contract {
     };
   }
 
+  async getBalance(provider: ContractProvider) {
+    const { stack } = await provider.get("balance", []);
+    return stack.readBigNumber();
+  }
+
   async sendIncrement(provider: ContractProvider, via: Sender, string: string) {
     const messageBody = beginCell()
       .storeUint(OPS.receive_opinion_string, 32) // op
@@ -48,7 +53,7 @@ export default class OpinionVerifier implements Contract {
       .storeUint(0, 64) // query id
       .endCell();
     await provider.internal(via, {
-      value: "0.2", // send 0.002 TON for gas
+      value: "0.02", // send 0.02 TON for gas
       body: messageBody
     });
   }
