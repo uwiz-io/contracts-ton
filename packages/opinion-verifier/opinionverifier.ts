@@ -1,10 +1,12 @@
 import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell } from "ton-core";
+import { OPS } from "./ops"
 
 export default class OpinionVerifier implements Contract {
 
-  static createForDeploy(code: Cell): OpinionVerifier {
+  static createForDeploy(code: Cell, owner: Address): OpinionVerifier {
     const data = beginCell()
       .storeUint(0, 256)
+      .storeAddress(owner)
       .endCell();
     const workchain = 0; // deploy to workchain 0
     const address = contractAddress(workchain, { code, data });
@@ -20,19 +22,33 @@ export default class OpinionVerifier implements Contract {
     });
   }
 
-  async getHash(provider: ContractProvider) {
-    const { stack } = await provider.get("get_hash", []);
-    return stack.readBigNumber();
+  async getInfo(provider: ContractProvider) {
+    const { stack } = await provider.get("get_info", []);
+    return {
+      hash: stack.readBigNumber(),
+      owner: stack.readAddress(),
+    };
   }
 
   async sendIncrement(provider: ContractProvider, via: Sender, string: string) {
     const messageBody = beginCell()
-      .storeUint(1, 32) // op (op #1 = increment)
+      .storeUint(OPS.receive_opinion_string, 32) // op
       .storeUint(0, 64) // query id
       .storeStringTail(string)
       .endCell();
     await provider.internal(via, {
-      value: "0.02", // send 0.002 TON for gas
+      value: "0.02", // send 0.02 TON for gas
+      body: messageBody
+    });
+  }
+
+  async sendRefund(provider: ContractProvider, via: Sender) {
+    const messageBody = beginCell()
+      .storeUint(OPS.pay_balance_back, 32) // op
+      .storeUint(0, 64) // query id
+      .endCell();
+    await provider.internal(via, {
+      value: "0.2", // send 0.002 TON for gas
       body: messageBody
     });
   }
