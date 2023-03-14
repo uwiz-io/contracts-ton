@@ -1,17 +1,17 @@
 import * as fs from "fs";
 import { Cell, toNano } from "ton-core";
 import { Blockchain, SandboxContract, TreasuryContract } from "@ton-community/sandbox";
-import Counter from "./opinionverifier"; // this is the interface class from tutorial 2
+import OpinionVerifier from "./opinionverifier"; // interface class
 
-describe("Counter tests", () => {
+describe("OpinionVerifier tests", () => {
   let blockchain: Blockchain;
   let wallet1: SandboxContract<TreasuryContract>;
-  let counterContract: SandboxContract<Counter>;
+  let counterContract: SandboxContract<OpinionVerifier>;
 
   beforeEach(async () =>  {
-    // prepare Counter's initial code and data cells for deployment
+    // prepare OpinionVerifier's initial code and data cells for deployment
     const counterCode = Cell.fromBoc(fs.readFileSync("../contracts/opinion-verifier/opinion-verifier.cell"))[0]; // compilation output from tutorial 2
-    const counter = Counter.createForDeploy(counterCode);
+    const counter = OpinionVerifier.createForDeploy(counterCode);
 
     // initialize the blockchain sandbox
     blockchain = await Blockchain.create();
@@ -56,4 +56,12 @@ describe("Counter tests", () => {
     expect(counterValue).toEqual(58757399233265749576496970889828891165277176610564091722293679610199217478816n);
   })
 
+  it("should change hash value twice", async () =>  {
+    await counterContract.sendIncrement(wallet1.getSender(), "string number 1");
+    await counterContract.sendIncrement(wallet1.getSender(), "string number 2");
+    const counterValue = await counterContract.getHash();
+    const hash1 = 85617597652922938203146612095153872869643404540777009106229100113798612621228n;
+    const hash2 = 70766656896111781296633975175188847294544542690326144552356215614455781813196n;
+    expect(counterValue).toEqual(hash1 ^ hash2);
+  })
 });

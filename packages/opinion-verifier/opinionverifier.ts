@@ -1,14 +1,14 @@
 import { Contract, ContractProvider, Sender, Address, Cell, contractAddress, beginCell } from "ton-core";
 
-export default class Counter implements Contract {
+export default class OpinionVerifier implements Contract {
 
-  static createForDeploy(code: Cell): Counter {
+  static createForDeploy(code: Cell): OpinionVerifier {
     const data = beginCell()
       .storeUint(0, 256)
       .endCell();
     const workchain = 0; // deploy to workchain 0
     const address = contractAddress(workchain, { code, data });
-    return new Counter(address, { code, data });
+    return new OpinionVerifier(address, { code, data });
   }
 
   constructor(readonly address: Address, readonly init?: { code: Cell, data: Cell }) {}
@@ -32,7 +32,7 @@ export default class Counter implements Contract {
       .storeStringTail(string)
       .endCell();
     await provider.internal(via, {
-      value: "0.002", // send 0.002 TON for gas
+      value: "0.02", // send 0.002 TON for gas
       body: messageBody
     });
   }
