@@ -30,6 +30,10 @@ export default class OpinionVerifier implements Contract {
     };
   }
 
+  async getState(provider: ContractProvider) {
+    return await provider.getState()
+  }
+
   async sendPredictionString(provider: ContractProvider, via: Sender, string: string) {
     const messageBody = beginCell()
       .storeUint(OPS.receive_prediction_string, 32) // op
@@ -37,7 +41,7 @@ export default class OpinionVerifier implements Contract {
       .storeStringTail(string)
       .endCell();
     await provider.internal(via, {
-      value: "0.02", // send 0.02 TON for gas
+      value: "0.04", // send 0.02 TON for gas
       body: messageBody
     });
   }

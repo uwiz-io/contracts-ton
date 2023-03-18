@@ -12,13 +12,13 @@ describe("OpinionVerifier tests", () => {
   beforeEach(async () =>  {
     // prepare OpinionVerifier's initial code and data cells for deployment
     const opinionVerifierCode = Cell.fromBoc(fs.readFileSync("../contracts/opinion-verifier/opinion-verifier.cell"))[0]; // compilation output from tutorial 2
+    // initialize the blockchain sandbox
     blockchain = await Blockchain.create();
     wallet1 = await blockchain.treasury("user1");
     wallet2 = await blockchain.treasury("user2");
 
     const opinionVerifier = OpinionVerifier.createForDeploy(opinionVerifierCode, wallet1.address);
 
-    // initialize the blockchain sandbox
 
     // uncomment for a more verbose chain
     // blockchain.verbosity = {
